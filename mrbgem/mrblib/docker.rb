@@ -22,6 +22,8 @@ module Docker
   end
 
   class Container
+    class NotFound < StandardError; end
+
     class << self
       def all
         @all ||= begin
@@ -37,8 +39,15 @@ module Docker
         @my_id ||= `hostname`.chomp
       end
 
-      def me
-        all.find { |c| c.id.start_with?(my_id) }
+      def me!(timeout_sec = 3)
+        return me if me
+
+        timeout_sec.times do
+          sleep 1
+          expire_cache!
+          return me if me
+        end
+        raise NotFound
       end
 
       def find_bay_fqdn(fqdn)
