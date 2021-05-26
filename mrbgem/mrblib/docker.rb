@@ -79,9 +79,9 @@ module Docker
     end
 
     def exposed_ports
-      data['NetworkSettings']['Ports'].select { |k, _| k.include?('tcp') }.map { |k, v|
+      data['NetworkSettings']['Ports'].select { |k, _| k.include?('tcp') }.map do |k, v|
         [v[0]['HostPort'].to_i, k.scan(/\d+/)[0].to_i]
-      }
+      end
     end
 
     def ip_address(container)
