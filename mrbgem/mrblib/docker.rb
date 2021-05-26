@@ -94,10 +94,12 @@ module Docker
     end
 
     def ip_address(container)
-      allow_access(container)
-
-      network = (container.networks & networks).first
+      network = shared_network_with(container)
       data['NetworkSettings']['Networks'].values.find { |n| n['NetworkID'] == network.id }['IPAddress']
+    end
+
+    def reachable_from?(container)
+      !!shared_network_with(container)
     end
 
     def listeing?(container, port)
@@ -112,5 +114,9 @@ module Docker
     private
 
     attr_reader :data
+
+    def shared_network_with(container)
+      (container.networks & networks).first
+    end
   end
 end
