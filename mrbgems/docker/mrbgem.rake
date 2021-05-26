@@ -1,4 +1,4 @@
-MRuby::Gem::Specification.new('repro-helper') do |spec|
+MRuby::Gem::Specification.new('docker') do |spec|
   spec.license = 'MIT'
   spec.version = '0.0.1'
 

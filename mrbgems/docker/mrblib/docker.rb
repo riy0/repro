@@ -28,6 +28,8 @@ module Docker
       def all
         @all ||= begin
           ids = `docker ps -q --no-trunc`.lines.map(&:chomp)
+          return [] if ids.empty?
+
           data = JSON.parse(`docker container inspect #{ids.join(' ')}`)
           data.map do |d|
             new(d)
@@ -50,8 +52,9 @@ module Docker
         raise NotFound
       end
 
-      def find_bay_fqdn(fqdn)
-        all.find { |c| c.fqdn == fqdn }
+      def find_by_hostname(hostname)
+        host = hostname.split('.').first
+        all.find { |c| c.host == host }
       end
 
       def expire_cache!
@@ -73,14 +76,6 @@ module Docker
 
     def host
       name.gsub('_', '-')
-    end
-
-    def uri(port)
-      "http://#{fqdn}:#{port}"
-    end
-
-    def fqdn
-      "#{host}.localhost"
     end
 
     def networks
