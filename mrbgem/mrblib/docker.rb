@@ -1,5 +1,15 @@
 module Docker
+  module Identifiable
+    def eql?(other)
+      self.class == other.class && id == other.id
+    end
+
+    def hash
+      id.hash
+    end
+  end
   class Network
+    include Identifiable
     attr_accessor :id
 
     def initialize(id)
@@ -11,18 +21,24 @@ module Docker
     end
   end
 
-  class Converter
+  class Container
     class << self
       def all
-        @all ||= `docker ps -q --no-trunc`.lines.map { |line| new(line.chomp) }
+        @all ||= begin
+          ids = `docker ps -q --no-trunc`.lines.map(&:chomp)
+          data = JSON.parse(`docker container inspect #{ids.join(' ')}`)
+          data.map do |d|
+            new(d)
+          end
+        end
       end
 
-      def except_me
-        all.reject { |c| c.id == me.id }
+      def my_id
+        @my_id ||= `cat /proc/self/cgroup`.scan(%r{cpu:/docker/(.*)})[0][0]
       end
 
       def me
-        all.find { |c| c.id == `cat /proc/self/cgroup`.scan(%r{cpu://docker/(.*)})[0][0] }
+        all.find { |c| c.id == my_id }
       end
 
       def find_bay_fqdn(fqdn)
@@ -34,8 +50,12 @@ module Docker
       end
     end
 
-    def initialize(id)
-      @id = id
+    def initialize(data)
+      @data = data
+    end
+
+    def id
+      data['id']
     end
 
     def name
@@ -59,55 +79,29 @@ module Docker
     end
 
     def exposed_ports
-      data['NetworkSettings']['Ports'].select { |k, _| k.include?('tcp') }.map { |k, v| v[0]['HostPort', k.scan(/\d+/)[0]] }
+      data['NetworkSettings']['Ports'].select { |k, _| k.include?('tcp') }.map { |k, v|
+        [v[0]['HostPort'].to_i, k.scan(/\d+/)[0].to_i]
+      }
     end
 
     def ip_address(container)
       allow_access(container)
 
-      network = shared_networks(container).first
+      network = (container.networks & networks).first
       data['NetworkSettings']['Networks'].values.find { |n| n['NetworkID'] == network.id }['IPAddress']
     end
 
     def listeing?(container, port)
-      allow_access!(container)
-
       @listeing_result ||= {}
-      @listeing_result[port] ||= begin
-        TCPSocker.new(ip_address(container), port).close
-        true
-      rescue
-        false
-      end
+      return @listening_result[port] if @listening_result.key?(port)
     end
 
     def expire_cache!
-      @data = nil
+      @listening_result[port] = FastRemoteCheck.new('127.0.0.1', 54_321, ip_address(container), port, 3).connectable?
     end
 
     private
 
-    def allow_access!(container)
-      return if accesible_from?(container)
-
-      networks.first.connect(container)
-
-      expire_cache!
-      container.expire_cache!
-      raise 'Unable to connect' unless accesible_from?(container)
-    end
-
-    def shared_networs(container)
-      network_ids = networks.map(&:id)
-      container.networks.select { |n| network_ids.include?(n.id) }
-    end
-
-    def accessible_from?(container)
-      shared_networks(container).any?
-    end
-
-    def data
-      @data ||= JSON.parse(`docker container inspect #{id}`)[0]
-    end
+    attr_reader :data
   end
 end

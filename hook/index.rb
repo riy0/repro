@@ -7,8 +7,6 @@ containers =  Docker::Container.except_me
 
 Nginx.echo <<-HTML
 
-
-Nginx.echo <<-HTML
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
