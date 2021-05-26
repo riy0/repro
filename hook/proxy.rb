@@ -1,4 +1,4 @@
-r = Nginx:: Request.new
+r = Nginx::Request.new
 c = Nginx::Connection.new
 me = Docker::Container.me!
 

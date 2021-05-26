@@ -1,5 +1,4 @@
 MRuby::Build.new('host') do |conf|
-
   toolchain :gcc
 
   conf.gembox 'full-core'
@@ -11,40 +10,15 @@ MRuby::Build.new('host') do |conf|
 
   conf.gem './mrbgems/docker'
 
-  #
-  # Recommended for ngx_mruby
-  #
   conf.gem :github => 'mattn/mruby-json'
   conf.gem :github => 'mattn/mruby-onig-regexp'
   conf.gem :github => 'matsumotory/mruby-sleep'
 
   # ngx_mruby extended class
   conf.gem './mrbgems/ngx_mruby_mrblib'
-
-  # use memcached
-  # conf.gem :github => 'matsumotory/mruby-memcached'
-
-  # build error on travis ci 2014/12/01, commented out mruby-file-stat
-  # conf.gem :github => 'ksss/mruby-file-stat'
-
-  # use markdown on ngx_mruby
-  # conf.gem :github => 'matsumotory/mruby-discount'
-
-  # use mysql on ngx_mruby
-  #conf.gem :github => 'mattn/mruby-mysql'
-
-  # have GeoIPCity.dat
-  # conf.gem :github => 'matsumotory/mruby-geoip'
-
-  # Linux only for ngx_mruby
-  # conf.gem :github => 'matsumotory/mruby-capability'
-  # conf.gem :github => 'matsumotory/mruby-cgroup'
-
 end
 
 MRuby::Build.new('test') do |conf|
-  # load specific toolchain settings
-
   # Gets set by the VS command prompts.
   if ENV['VisualStudioVersion'] || ENV['VSINSTALLDIR']
     toolchain :visualcpp

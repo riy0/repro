@@ -8,9 +8,11 @@ module Docker
       id.hash
     end
   end
+
   class Network
     include Identifiable
-    attr_accessor :id
+
+    attr_reader :id
 
     def initialize(id)
       @id = id
@@ -60,14 +62,22 @@ module Docker
       def expire_cache!
         @all = nil
       end
+
+      private
+
+      def me
+        all.find { |c| c.id.start_with?(my_id) }
+      end
     end
+
+    include Identifiable
 
     def initialize(data)
       @data = data
     end
 
     def id
-      data['id']
+      data['Id']
     end
 
     def name
@@ -97,12 +107,10 @@ module Docker
       !!shared_network_with(container)
     end
 
-    def listeing?(container, port)
-      @listeing_result ||= {}
+    def listening?(container, port)
+      @listening_result ||= {}
       return @listening_result[port] if @listening_result.key?(port)
-    end
 
-    def expire_cache!
       @listening_result[port] = FastRemoteCheck.new('127.0.0.1', 54_321, ip_address(container), port, 3).connectable?
     end
 

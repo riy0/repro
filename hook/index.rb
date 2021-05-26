@@ -1,4 +1,4 @@
-r = Nginx:Request.new
+r = Nginx::Request.new
 r.content_type = "text/html"
 
 Docker::Container.expire_cache!
@@ -14,21 +14,19 @@ if not_connected_networks.any?
   me = Docker::Container.me!
   containers = Docker::Container.all - [me]
 end
-containers = containers.select { |c| c.reachable_from?(me) }.sort_by(&:name)
-
+containers = containers.select {|c| c.reachable_from?(me) }.sort_by(&:name)
 
 Nginx.echo <<-HTML
-
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="Content-Style-Type" content="text/css" />
-    <title>Yaichi</title>
+    <title>Repro</title>
     <link rel="stylesheet" href="https://cdn.rawgit.com/andyferra/2554919/raw/2e66cabdafe1c9a7f354aa2ebf5bc38265e638e5/github.css" type="text/css" />
   </head>
   <body>
     <a href="https://github.com/riy0/repro">
-      link
+      hoge
     </a>
     <h1>Proxy-able Containers</h1>
     <ul>
