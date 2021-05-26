@@ -26,13 +26,13 @@ Nginx.echo <<-HTML
   </head>
   <body>
     <a href="https://github.com/riy0/repro">
-      hoge
+      riy0/repro
     </a>
     <h1>Proxy-able Containers</h1>
     <ul>
     #{
       containers.flat_map do |c|
-        me.exposed_ports.select {|_, local| c.listening?(me, local) }.map do |remote, local|
+        me.exposed_ports.select { |_, local| c.listening?(me, local) }.map do |remote, local|
           "<li><a href='http://#{c.host}.#{r.hostname}:#{remote}' target='_blank'>#{c.name} (#{remote}:#{local})</a></li>"
         end
       end.join("\n")
@@ -41,7 +41,7 @@ Nginx.echo <<-HTML
     <h1>All Containers</h1>
     <ul>
     #{
-      containers.map {|c| "<li>#{c.name}</li>" }.join("\n")
+      containers.map { |c| "<li>#{c.name}</li>" }.join("\n")
     }
     </ul>
   </body>
